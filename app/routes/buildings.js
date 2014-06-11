@@ -17,7 +17,7 @@ exports.create = (req, res)=>{
 
 exports.show = (req, res)=>{
   Floor.findAll(floors=>{
-    Building.findById(req.params.id, bldg=>{
+    Building.findByIdFullObject(req.params.id, bldg=>{
       bldg.cost(rate=>{
         res.render('buildings/show', {floors:floors, bldg:bldg, rate:rate, title:bldg.name});
       });

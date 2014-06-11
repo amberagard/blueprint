@@ -28,6 +28,20 @@ class Building{
     Base.findById(id, buildingCollection, Building, fn);
   }
 
+  static findByIdFullObject(id, fn){
+    Base.findById(id, buildingCollection, Building, bldg=>{
+      Location.findById(bldg.locationId, loc=>{
+        bldg.location = loc;
+        async.map(bldg.rooms, transformRoom, (e, rooms)=>{
+          bldg.rooms = rooms;
+          fn(bldg);
+        });
+      });
+    });
+  }
+
+
+
   addRoom(obj, fn){
     var room = new Room(obj);
     this.rooms.push(room);
@@ -41,7 +55,7 @@ class Building{
       async.map(this.rooms, transformRoom, (e, rooms)=>{
         rate += rooms.reduce((acc, room)=>{
           var sqft = (room.end.x + 1 - room.begin.x) * (room.end.y + 1 - room.begin.y);
-          return sqft * room.floor.rate;
+          return sqft * room.floor.rate + acc;
         }, 0);
         fn(rate);
       });

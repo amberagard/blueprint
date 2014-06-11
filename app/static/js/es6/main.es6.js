@@ -1,4 +1,5 @@
 /* jshint unused:false */
+/* global building */
 
 (function(){
   'use strict';
@@ -10,6 +11,23 @@
   function init(){
     $('#create-room').click(createRoom);
     $('#save-room').click(saveRoom);
+    paintBuilding();
+  }
+
+  function paintBuilding() {
+    building.rooms.forEach(r=>{
+
+      var selectors = [];
+
+      for (var y = r.begin.y; y <= r.end.y; y++) {
+        for(var x = r.begin.x; x <= r.end.x; x++){
+          selectors.push(`.cell[data-x=${x}][data-y=${y}]`);
+        }
+      }
+
+      var selector = selectors.join(', ');
+      $(selector).css('background-image', `url(${r.floor.photo})`);
+    });
   }
 
   function saveRoom(){
@@ -20,11 +38,12 @@
     $.ajax({
       url: `/buildings/${id}/rooms`,
       type: 'put',
-      data: {name:name, begin:begin, end:end, floorId:floorId},
+      data: {name:name, beginX:begin.x, endX:end.x, beginY:begin.y, endY:end.y, floorId:floorId},
       dataType: 'json',
       success: data => {
         console.log('here is the data');
         console.log(data);
+        $('#cost').empty().text(`$${data.cost.toFixed(2)}`);
       }
     });
   }
@@ -48,18 +67,18 @@
 
   function previewing(){
     $('#building').on('click', '.cell', selectEnd);
-    $('.temp').css('background-image', 'none');
-    var temp = {x:$(this).data('x')*1, y:$(this).data('y')*1};
+    end = {x:$(this).data('x')*1, y:$(this).data('y')*1};
     var img = $('#floors option:selected').data('img');
     var selectors = [];
 
-    for(var y=begin.y; y<=temp.y; y++){
-      for(var x=begin.x; x<=temp.x; x++){
+    for(var y=begin.y; y<=end.y; y++){
+      for(var x=begin.x; x<=end.x; x++){
         selectors.push(`.cell[data-x=${x}][data-y=${y}]`);
       }
     }
 
     var selector = selectors.join(', ');
-    $(selector).addClass('temp').css('background-image', `url(${img})`);
+    $(selector).css('background-image', `url(${img})`);
   }
+
 })();
